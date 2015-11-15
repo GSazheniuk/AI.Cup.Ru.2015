@@ -16,7 +16,6 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 		private double lastY3 = 0;
 
 		private Direction sDirection;
-		private Direction saveDirection;
 
 		private Direction _nextWaypoint {
 			get {
@@ -81,7 +80,7 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 				_move.WheelTurn = (_self.Angle / 2);
 			}
 
-			if (sDirection == Direction.Down && saveDirection == Direction.Left) {
+			if (sDirection == Direction.Down) {
 				if (Math.Abs (_self.Angle - Math.PI / 2) < Math.PI)
 					_move.WheelTurn = -1 * ((_self.Angle - Math.PI / 2) / 2);
 				else
@@ -98,53 +97,71 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			_move.WheelTurn = _move.WheelTurn * ((rearMove) ? 1 : -1);
 		}
 
+		private void NewTurnWheel()
+		{
+			if (sDirection == Direction.Down) {
+				if (_self.Angle > 0)
+					_move.WheelTurn = -1 * (_self.Angle - Math.PI / 2);
+				else if (_self.Angle < -Math.PI / 2)
+					_move.WheelTurn = -1;
+				else
+					_move.WheelTurn = 1;
+			}
+
+			if (sDirection == Direction.Up) {
+				_move.WheelTurn = -1 * ((_self.Angle + Math.PI / 2) / 2);
+			}
+
+			if (sDirection == Direction.Right) {
+				_move.WheelTurn = -1 * (_self.Angle / 2);
+			}
+
+			if (sDirection == Direction.Left) {
+				if (Math.Abs (_self.Angle - Math.PI) < Math.PI) 
+					_move.WheelTurn = -1 * ((_self.Angle - Math.PI) / 2);
+				else
+					_move.WheelTurn = -1 * ((_self.Angle + Math.PI) / 2);
+			}
+		}
+
 		public void CheckTurn()
 		{
 
 		if (sDirection == Direction.Up && _topTile == TileType.LeftTopCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Right;
 		}
 
 		if (sDirection == Direction.Up && _topTile == TileType.RightTopCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Left;
 		}
 
 		if (sDirection == Direction.Right && _rightTile == TileType.RightTopCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Down;
 		}
 
 		if (sDirection == Direction.Right && _rightTile == TileType.RightBottomCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Up;
 		}
 
 		if (sDirection == Direction.Down && _botTile == TileType.RightBottomCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Left;
 		}
 
 		if (sDirection == Direction.Down && _botTile == TileType.LeftBottomCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Right;
 		}
 
 		if (sDirection == Direction.Left && _leftTile == TileType.LeftBottomCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Up;
 		}
 
 		if (sDirection == Direction.Left && _leftTile == TileType.LeftTopCorner) {
-			saveDirection = sDirection;
 			sDirection = Direction.Down;
 		}
 
 			if (sDirection == Direction.Up && (_topTile == TileType.Crossroads || _topTile == TileType.TopHeadedT)
 			    || sDirection == Direction.Down && (_botTile == TileType.Crossroads || _botTile == TileType.BottomHeadedT)) {
 				if (Math.Abs (_self.X - _self.NextWaypointX) <= _game.TrackTileSize * 2) {
-					saveDirection = sDirection;
 					sDirection = (_self.X < _self.NextWaypointX) ? Direction.Right : Direction.Left;
 				}
 			}
@@ -152,21 +169,16 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			if (sDirection == Direction.Left && (_leftTile == TileType.Crossroads || _leftTile == TileType.LeftHeadedT)
 			    || sDirection == Direction.Right && (_rightTile == TileType.Crossroads || _rightTile == TileType.RightHeadedT)) {
 				if (Math.Abs (_self.Y - _self.NextWaypointY) <= _game.TrackTileSize * 2) {
-					saveDirection = sDirection;
 					sDirection = (_self.Y < _self.NextWaypointY) ? Direction.Down : Direction.Up;
 				}
 			}
-
-			if (sDirection != saveDirection)
-				slowDown = 20;
 		}
 
 		private void CheckStuck()
 		{
-			if (Math.Abs(lastX1 - lastX3) < 0.1 && Math.Abs(lastY1 - lastY3) < 0.1 && _world.Tick > _game.InitialFreezeDurationTicks) {
+			if (Math.Abs(lastX1 - lastX3) < 0.05 && Math.Abs(lastY1 - lastY3) < 0.05 && _world.Tick > _game.InitialFreezeDurationTicks) {
 				activeTicks = 100;
 				rearMove = true;
-				saveDirection = sDirection;
 			} else
 				rearMove = false;
 		}
@@ -178,10 +190,6 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			lastY1 = lastY2;
 			lastY2 = lastY3;
 			lastY3 = Math.Round(self.Y, 2);
-			AngleD = Math.PI / 2;
-			AngleL = Math.PI;
-			AngleR = 0;
-			AngleU = -Math.PI / 2;
 
 			this._game = game;
 			this._move = move;
@@ -190,8 +198,11 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 
 			if (rearMove) {
 				move.EnginePower = -1.0D;
-				move.WheelTurn = (activeTicks > 50) ? -1 : 0;
+				move.WheelTurn = 0;//(activeTicks > 50) ? -1 : 0;
 			}
+
+			if (activeTicks == 90 && Math.Abs (lastX1 - lastX3) < 0.05 && Math.Abs (lastY1 - lastY3) < 0.05 && _world.Tick > _game.InitialFreezeDurationTicks)
+				rearMove = false;
 
 			if (activeTicks > 0) {
 				activeTicks --;
@@ -224,12 +235,12 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
             if (world.Tick > game.InitialFreezeDurationTicks) {
                 move.IsUseNitro = true;
 				CheckTurn ();
-				TurnWheel ();
+				NewTurnWheel ();
 				CheckStuck ();
             }
 
 			if (_thisTile != TileType.Empty) {
-				saveDirection = sDirection;
+//				saveDirection = sDirection;
 			}
         }
     }
