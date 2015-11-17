@@ -97,34 +97,45 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			_move.WheelTurn = _move.WheelTurn * ((rearMove) ? 1 : -1);
 		}
 
-		private void NewTurnWheel()
-		{
-			if (sDirection == Direction.Down) {
-				if (_self.Angle > 0)
-					_move.WheelTurn = -1 * (_self.Angle - Math.PI / 2);
-				else if (_self.Angle < -Math.PI / 2)
-					_move.WheelTurn = -1;
-				else
-					_move.WheelTurn = 1;
-			}
+        private void NewTurnWheel()
+        {
+            if (sDirection == Direction.Down)
+            {
+                if (_self.Angle > 0)
+                    _move.WheelTurn = -1 * (_self.Angle - Math.PI / 2);
+                else if (_self.Angle < -Math.PI / 2)
+                    _move.WheelTurn = -1;
+                else
+                    _move.WheelTurn = 1;
+            }
 
-			if (sDirection == Direction.Up) {
-				_move.WheelTurn = -1 * ((_self.Angle + Math.PI / 2) / 2);
-			}
+            if (sDirection == Direction.Up)
+            {
+                if (Math.Abs(_self.Angle) < Math.PI / 2)
+                    _move.WheelTurn = -1 * (Math.PI / 2 - Math.Abs(_self.Angle)) / 2;
+                else
+                    _move.WheelTurn = ((Math.Abs(_self.Angle) - Math.PI / 2) / 2);
+                //				_move.WheelTurn = -1 * ((_self.Angle + Math.PI / 2) / 2);
+            }
 
-			if (sDirection == Direction.Right) {
-				_move.WheelTurn = -1 * (_self.Angle / 2);
-			}
+            if (sDirection == Direction.Right)
+            {
+                _move.WheelTurn = -1 * (_self.Angle / 2);
+            }
 
-			if (sDirection == Direction.Left) {
-				if (Math.Abs (_self.Angle - Math.PI) < Math.PI) 
-					_move.WheelTurn = -1 * ((_self.Angle - Math.PI) / 2);
-				else
-					_move.WheelTurn = -1 * ((_self.Angle + Math.PI) / 2);
-			}
-		}
+            if (sDirection == Direction.Left)
+            {
+                if (Math.Abs(_self.Angle - Math.PI) < Math.PI)
+                    _move.WheelTurn = -1 * ((_self.Angle - Math.PI) / 2);
+                else
+                    _move.WheelTurn = -1 * ((_self.Angle + Math.PI) / 2);
+            }
 
-		public void CheckTurn()
+            if (rearMove)
+                _move.WheelTurn = -_move.WheelTurn;
+        }
+
+        public void CheckTurn()
 		{
 
 		if (sDirection == Direction.Up && _topTile == TileType.LeftTopCorner) {
@@ -223,17 +234,17 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			}
 
 			if (world.Tick > game.InitialFreezeDurationTicks && world.Tick < game.InitialFreezeDurationTicks + 20) {
-				move.IsSpillOil = true;
-				move.WheelTurn = 0;
-				sDirection = world.StartingDirection;
+                move.IsUseNitro = true;
+                //				move.IsSpillOil = true;
+                //				move.WheelTurn = 0;
+                sDirection = world.StartingDirection;
 			}
 
 			if (world.Tick > game.InitialFreezeDurationTicks && world.Tick < game.InitialFreezeDurationTicks + 10 && move.WheelTurn == 0) {
-				move.WheelTurn = 15;
+//				move.WheelTurn = 1;
 			}
 
             if (world.Tick > game.InitialFreezeDurationTicks) {
-                move.IsUseNitro = true;
 				CheckTurn ();
 				NewTurnWheel ();
 				CheckStuck ();
