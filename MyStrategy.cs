@@ -27,6 +27,9 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 
 		private int activeTicks = 0;
 		private int slowDown = 0;
+        private int noTurn = 0;
+        private int noStuck = 0;
+        private int noIgnite = 0;
 
 		private bool rearMove = false;
 
@@ -133,65 +136,141 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 
             if (rearMove)
                 _move.WheelTurn = -_move.WheelTurn;
+
+            if (Math.Abs(_move.WheelTurn) < 0.1)
+            {
+                switch (sDirection)
+                {
+                    case Direction.Down:
+                        if (_self.X < (int)(_self.X / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = -0.15;
+                        }
+                        if (_self.X > (int)(_self.X / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = 0.15;
+                        }
+                        break;
+                    case Direction.Up:
+                        if (_self.X < (int)(_self.X / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = 0.15;
+                        }
+                        if (_self.X > (int)(_self.X / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = -0.15;
+                        }
+                        break;
+                    case Direction.Left:
+                        if (_self.Y < (int)(_self.Y / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = -0.15;
+                        }
+                        if (_self.Y > (int)(_self.Y / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = 0.15;
+                        }
+                        break;
+                    case Direction.Right:
+                        if (_self.Y < (int)(_self.Y / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = 0.15;
+                        }
+                        if (_self.Y > (int)(_self.Y / _game.TrackTileSize) * _game.TrackTileSize + _game.TrackTileSize / 2)
+                        {
+                            _move.WheelTurn = -0.15;
+                        }
+                        break;
+                }
+            }
         }
 
         public void CheckTurn()
 		{
 
-		if (sDirection == Direction.Up && _topTile == TileType.LeftTopCorner) {
-			sDirection = Direction.Right;
-		}
+            if (sDirection == Direction.Up && _topTile == TileType.LeftTopCorner)
+            {
+                noIgnite = 20;
+                sDirection = Direction.Right;
+                return;
+            }
 
 		if (sDirection == Direction.Up && _topTile == TileType.RightTopCorner) {
-			sDirection = Direction.Left;
-		}
+                noIgnite = 20;
+                sDirection = Direction.Left;
+                return;
+            }
 
-		if (sDirection == Direction.Right && _rightTile == TileType.RightTopCorner) {
-			sDirection = Direction.Down;
-		}
+            if (sDirection == Direction.Right && _rightTile == TileType.RightTopCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Down;
+                return;
+            }
 
-		if (sDirection == Direction.Right && _rightTile == TileType.RightBottomCorner) {
-			sDirection = Direction.Up;
-		}
+            if (sDirection == Direction.Right && _rightTile == TileType.RightBottomCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Up;
+                return;
+            }
 
-		if (sDirection == Direction.Down && _botTile == TileType.RightBottomCorner) {
-			sDirection = Direction.Left;
-		}
+            if (sDirection == Direction.Down && _botTile == TileType.RightBottomCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Left;
+                return;
+            }
 
-		if (sDirection == Direction.Down && _botTile == TileType.LeftBottomCorner) {
-			sDirection = Direction.Right;
-		}
+            if (sDirection == Direction.Down && _botTile == TileType.LeftBottomCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Right;
+                return;
+            }
 
-		if (sDirection == Direction.Left && _leftTile == TileType.LeftBottomCorner) {
-			sDirection = Direction.Up;
-		}
+            if (sDirection == Direction.Left && _leftTile == TileType.LeftBottomCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Up;
+                return;
+            }
 
-		if (sDirection == Direction.Left && _leftTile == TileType.LeftTopCorner) {
-			sDirection = Direction.Down;
-		}
+            if (sDirection == Direction.Left && _leftTile == TileType.LeftTopCorner) {
+                noIgnite = 20;
+                sDirection = Direction.Down;
+                return;
+            }
 
-			if (sDirection == Direction.Up && (_topTile == TileType.Crossroads || _topTile == TileType.TopHeadedT)
-			    || sDirection == Direction.Down && (_botTile == TileType.Crossroads || _botTile == TileType.BottomHeadedT)) {
-				if (Math.Abs (_self.X - _self.NextWaypointX) <= _game.TrackTileSize * 2) {
-					sDirection = (_self.X < _self.NextWaypointX) ? Direction.Right : Direction.Left;
-				}
-			}
+            if (sDirection == Direction.Up && (_topTile == TileType.BottomHeadedT)
+			    || sDirection == Direction.Down && (_botTile == TileType.TopHeadedT)) {
+//				if (Math.Abs (_self.X - _self.NextWaypointX) <= _game.TrackTileSize * 2) {
+                    noIgnite = 20;
+                    sDirection = (_self.X < _self.NextWaypointX) ? Direction.Right : Direction.Left;
+                    return;
+//                }
+            }
 			
-			if (sDirection == Direction.Left && (_leftTile == TileType.Crossroads || _leftTile == TileType.LeftHeadedT)
-			    || sDirection == Direction.Right && (_rightTile == TileType.Crossroads || _rightTile == TileType.RightHeadedT)) {
-				if (Math.Abs (_self.Y - _self.NextWaypointY) <= _game.TrackTileSize * 2) {
-					sDirection = (_self.Y < _self.NextWaypointY) ? Direction.Down : Direction.Up;
-				}
-			}
+			if (sDirection == Direction.Left && (_leftTile == TileType.RightHeadedT)
+			    || sDirection == Direction.Right && (_rightTile == TileType.LeftHeadedT)) {
+//				if (Math.Abs (_self.Y - _self.NextWaypointY) <= _game.TrackTileSize * 2) {
+                    noIgnite = 20;
+                    sDirection = (_self.Y < _self.NextWaypointY) ? Direction.Down : Direction.Up;
+                    return;
+//                }
+            }
 		}
 
 		private void CheckStuck()
 		{
-			if (Math.Abs(lastX1 - lastX3) < 0.05 && Math.Abs(lastY1 - lastY3) < 0.05 && _world.Tick > _game.InitialFreezeDurationTicks) {
-				activeTicks = 100;
-				rearMove = true;
-			} else
-				rearMove = false;
+            if (Math.Abs(lastX1 - lastX3) < 0.05 && Math.Abs(lastY1 - lastY3) < 0.05 && _world.Tick > _game.InitialFreezeDurationTicks && activeTicks == 0 && noStuck == 0)
+            {
+                activeTicks = 80;
+                rearMove = true;
+                _move.EnginePower = -1 * _move.EnginePower;
+            }
+            else
+            {
+                if (rearMove)
+                    noStuck = 30;
+                rearMove = false;
+
+            }
 		}
 
         public void Move(Car self, World world, Game game, Move move) {
@@ -220,13 +299,22 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 				return;
 			}
 
-			if (slowDown > 0) {
+            if (noStuck > 0)
+                noStuck--;
+
+            if (slowDown > 0) {
 				move.EnginePower = 0.5D;
 			}
 			else
 				move.EnginePower = 1.0D;
 
-			move.IsThrowProjectile = false;
+            if (noIgnite > 0)
+            {
+                noIgnite--;
+                //return;
+            }
+
+            move.IsThrowProjectile = false;
 			move.IsSpillOil = false;
 
 			if (world.Tick > game.InitialFreezeDurationTicks && world.Tick < game.InitialFreezeDurationTicks + 10) {
@@ -234,7 +322,6 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 			}
 
 			if (world.Tick > game.InitialFreezeDurationTicks && world.Tick < game.InitialFreezeDurationTicks + 20) {
-                move.IsUseNitro = true;
                 //				move.IsSpillOil = true;
                 //				move.WheelTurn = 0;
                 sDirection = world.StartingDirection;
@@ -244,10 +331,13 @@ namespace Com.CodeGame.CodeRacing2015.DevKit.CSharpCgdk {
 //				move.WheelTurn = 1;
 			}
 
-            if (world.Tick > game.InitialFreezeDurationTicks) {
-				CheckTurn ();
+            if (world.Tick > game.InitialFreezeDurationTicks + 30) {
+                move.IsUseNitro = (noIgnite == 0);
+                CheckTurn();
 				NewTurnWheel ();
 				CheckStuck ();
+                if (Math.Abs(_move.WheelTurn) > Math.PI / 6)
+                    move.IsUseNitro = false;
             }
 
 			if (_thisTile != TileType.Empty) {
